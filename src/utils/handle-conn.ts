@@ -40,6 +40,7 @@ function checkWSMessageType<T>(targetType: WSMessageTypes, msg: WSMessage<any>):
 
 function handleMessage(message: string, ctx: MainCTXData) {
   const resM = JSON.parse(message) as WSMessage<any>
+  console.log(resM)
   const isWhoami = checkWSMessageType<WhoamiMsgResBody>(WSMessageTypes.whoami, resM)
   if (isWhoami) {
     ctx.user = resM.body.user

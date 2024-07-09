@@ -7,7 +7,7 @@ import { GetCookie, SetCookie } from '@/utils/cookie'
 import handleConn from '@/utils/handle-conn'
 
 
-// TODO: Introducir conexion websocket en el contexto principal
+// TODO: Introducir conexion websocket en el contexto principal 
 
 export const MainCTX = createContext<MainCTXData | null>(null)
 
@@ -20,15 +20,20 @@ const MainCTXProvider: FC<Props> = ({ children }) => {
   // SetCookie("token", userToken, 365)
 
   let ctxData: MainCTXData = {
-    user: null
+    user: null,
+    conn: null
   }
   try {
-    const urlConn = "ws://localhost:3000/ws"
+    const urlConn = process.env.WS_URL
+    if (!urlConn) {
+      throw new Error("WS_URL environment variable is not defined")
+    }
     const conn = Connect(urlConn)
     console.log(`connecting to websocket server with url: ${urlConn} ...`)
     // Datos iniciales del contexto
     ctxData = {
-      user: null
+      user: null,
+      conn
     }
     // Obtener cookie recien establecida
     const token = GetCookie("token")

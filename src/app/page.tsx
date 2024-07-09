@@ -1,18 +1,13 @@
 import MessageStack from "./components/message-stack"
 import Entry from "./components/entry"
-import MainCTXProvider from "@/app/ctx/main-ctx"
+import Header from "./components/header"
 
 export default function HemePage() {
   return <>
-    <header className="text-center py-4">
-      <h1 className="text-5xl text-white font-bold">gowsauthv2</h1>
-      <a href="/login">Ir a login</a>
-    </header>
+    <Header title={"WebSocket Chat"} />
     <main className="min-h-screen flex flex-col justify-between items-center">
-      <MainCTXProvider>
-        <MessageStack />
-        <Entry />
-      </MainCTXProvider>
+      <MessageStack />
+      <Entry />
     </main>
   </>
 }

@@ -10,9 +10,9 @@ interface Props {
 
 const Message: FC<Props> = ({ currentUser, username, firstname, lastname, message }) => {
   const style = {
-    bgColor: currentUser == username ? "bg-zinc-300" : "bg-zinc-900",
+    bgColor: currentUser == username ? "bg-zinc-200" : "bg-zinc-900",
     justify: currentUser == username ? "justify-end" : "justify-start",
-    textColor: currentUser == username ? "text-zinc-900" : "text-zinc-300"
+    textColor: currentUser == username ? "text-zinc-900" : "text-zinc-200"
   }
 
   return <div className={`flex ${style.justify}`}>
