@@ -6,6 +6,7 @@ export default function HemePage() {
   return <>
     <header className="text-center py-4">
       <h1 className="text-5xl text-white font-bold">gowsauthv2</h1>
+      <a href="/login">Ir a login</a>
     </header>
     <main className="min-h-screen flex flex-col justify-between items-center">
       <MainCTXProvider>

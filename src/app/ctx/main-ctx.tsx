@@ -1,37 +1,43 @@
 "use client"
 
+import React, { FC, ReactNode, createContext } from 'react'
 import { Connect } from '@/utils/connect'
 import { MainCTXData } from '@/utils/definitions'
-import React, { FC, ReactNode, createContext } from 'react'
+import { GetCookie, SetCookie } from '@/utils/cookie'
+import handleConn from '@/utils/handle-conn'
 
-interface Props { children: ReactNode }
+
+// TODO: Introducir conexion websocket en el contexto principal
 
 export const MainCTX = createContext<MainCTXData | null>(null)
 
-const MainCTXProvider: FC<Props> = ({ children }) => {
-  try {
-    const conn = Connect("ws://localhost:3000/ws")
-    conn.onmessage = function (event) {
-      console.log(event.data)
-    }
-    conn.onerror = function (event) {
-      console.error(event)
-    }
-    console.log("websocket connection established")
-    setTimeout(() => {
-      conn.send(JSON.stringify({
-        type: 4,
-        body: {
-          token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjF9.rOZUJsf4tJ9BrpRODd5ARwclRZpGTS16uRxhvgIwWdY"
-        }
-      }))
+interface Props { children: ReactNode }
 
-    }, 1000)
+const MainCTXProvider: FC<Props> = ({ children }) => {
+
+  // Establecer cookie con token de sesion
+  // const userToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjF9.rOZUJsf4tJ9BrpRODd5ARwclRZpGTS16uRxhvgIwWdY"
+  // SetCookie("token", userToken, 365)
+
+  let ctxData: MainCTXData = {
+    user: null
+  }
+  try {
+    const urlConn = "ws://localhost:3000/ws"
+    const conn = Connect(urlConn)
+    console.log(`connecting to websocket server with url: ${urlConn} ...`)
+    // Datos iniciales del contexto
+    ctxData = {
+      user: null
+    }
+    // Obtener cookie recien establecida
+    const token = GetCookie("token")
+    handleConn(conn, ctxData, token)
   } catch (error) {
     console.error(error)
   }
 
-  return <MainCTX.Provider value={null}>{children}</MainCTX.Provider>
+  return <MainCTX.Provider value={ctxData}>{children}</MainCTX.Provider>
 }
 
 export default MainCTXProvider
