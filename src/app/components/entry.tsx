@@ -3,9 +3,10 @@
 import { ChangeEventHandler, FC, MouseEventHandler, useContext, useState } from 'react'
 import { BsFillSendFill } from "react-icons/bs";
 import { MainCTX } from '../ctx/main-ctx';
-import { GuestMsgReqBody, WSMessage } from '@/utils/definitions';
-import WSMessageTypes from '@/utils/ws-message-types';;
-import { serialize } from '@/utils/decodig-ws-message';
+import { ShoutMsgReqBody, WSMessage } from '@/utils/definitions';
+import { GetCookie } from '@/utils/cookie';
+import { checkConn } from '@/utils/connection';
+import { MessageTypes, serialize } from '@/utils/ws-messages';
 
 interface Props { }
 
@@ -18,16 +19,19 @@ const Entry: FC<Props> = () => {
   }
 
   const handleClick: MouseEventHandler<HTMLButtonElement> = () => {
-    if (ctx && ctx.conn && ctx.conn.readyState === WebSocket.OPEN) {
-      const message: WSMessage<GuestMsgReqBody> = {
-        type: WSMessageTypes.guest,
-        body: {
-          message: input
-        }
+    const token = GetCookie("token")
+    if (!token || !ctx || !ctx.user[0]) return window.alert("first, log-in")
+    if (!checkConn(ctx.connInfo[0])) return
+    const conn = ctx.connInfo[0].conn!
+    const message: WSMessage<ShoutMsgReqBody> = {
+      type: MessageTypes.shout,
+      body: {
+        token: token!,
+        message: input
       }
-      const serialized = serialize(message)
-      ctx.conn.send(serialized)
     }
+    const serialized = serialize(message)
+    conn.send(serialized)
   }
 
   return <div className="w-[65%] h-[85px] flex sticky bottom-0 bg-neutral-800 text-zinc-300 pb-4">

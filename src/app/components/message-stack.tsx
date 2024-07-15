@@ -1,15 +1,31 @@
-import { FC } from "react"
+'use client'
+
+import { FC, useContext } from "react"
 import Message from "./message"
+import { MainCTX } from "@/app/ctx/main-ctx"
+import { checkConn } from "@/utils/connection"
 
 interface Props { }
 
 const MessageStack: FC<Props> = () => {
-  return <div className="w-[50%] flex flex-col gap-4">
-    <Message currentUser="user1" username="user1" firstname="Alfredo" lastname="Hernandez" message="Hello World, este es un mensaje de alfredo" />
-    <Message currentUser="user2" username="user1" firstname="Alfredo" lastname="Hernandez" message="Hello World, este es un mensaje de alfredo" />
-    <Message currentUser="user2" username="user1" firstname="Alfredo" lastname="Hernandez" message="Hello World, este es un mensaje de alfredo" />
-    <Message currentUser="user1" username="user1" firstname="Alfredo" lastname="Hernandez" message="Hello World, este es un mensaje de alfredo" />
-  </div>
+  const ctx = useContext(MainCTX)
+  if (!ctx) return null
+  const [connInfo] = ctx.connInfo
+  const [user] = ctx.user
+  const [messages] = ctx.messages
+  const [requiredUsers] = ctx.requiredUsers
+
+  if (!checkConn(connInfo)) return null
+
+  return <>
+    <div className="flex flex-col w-[50%] gap-2">
+      {messages.map(message => {
+        const owner = requiredUsers.find(user => user.userID == message.owner)
+        if (!owner) return null
+        return <Message key={message.messageID} session={user} owner={owner}>{message.message}</Message>
+      })}
+    </div>
+  </>
 }
 
 export default MessageStack

@@ -1,13 +1,16 @@
 "use client"
 
-import React, { FC, ReactNode, createContext } from 'react'
-import { Connect } from '@/utils/connect'
-import { MainCTXData } from '@/utils/definitions'
-import { GetCookie, SetCookie } from '@/utils/cookie'
+import React, { FC, ReactNode, createContext, useEffect, useState } from 'react'
+import { checkConn, connect } from '@/utils/connection'
+import { MainCTXData, User, Message, WebSocketConnInfo } from '@/utils/definitions'
+import { GetCookie } from '@/utils/cookie'
 import handleConn from '@/utils/handle-conn'
+import { EnvVarNotDefinedError } from '@/utils/env'
+import useGetRequiredUsers from '@/app/hooks/use-get-required-users'
 
 
-// TODO: Introducir conexion websocket en el contexto principal 
+const urlConn = process.env["WS_URL"]!
+if (urlConn === undefined) throw new EnvVarNotDefinedError("WS_URL")
 
 export const MainCTX = createContext<MainCTXData | null>(null)
 
@@ -19,28 +22,44 @@ const MainCTXProvider: FC<Props> = ({ children }) => {
   // const userToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjF9.rOZUJsf4tJ9BrpRODd5ARwclRZpGTS16uRxhvgIwWdY"
   // SetCookie("token", userToken, 365)
 
+  const user = useState<User | null>(null);
+  const connInfo = useState<WebSocketConnInfo>({ state: WebSocket.CLOSED, conn: null });
+  const messages = useState<Message[]>([]);
+  const requiredUsers = useGetRequiredUsers(connInfo[0].conn, messages[0])
+
   let ctxData: MainCTXData = {
-    user: null,
-    conn: null
+    user,
+    requiredUsers,
+    connInfo,
+    messages,
   }
-  try {
-    const urlConn = process.env.WS_URL
-    if (!urlConn) {
-      throw new Error("WS_URL environment variable is not defined")
+
+  useEffect(() => {
+    try {
+      const newConn = connect(urlConn)
+      const newConnInfo: WebSocketConnInfo = {
+        state: WebSocket.CONNECTING,
+        conn: newConn
+      }
+      console.log(`connecting to websocket server with url: ${urlConn} ...`)
+      const [_, setConnInfo] = connInfo
+      setConnInfo(newConnInfo)
+    } catch (error) {
+      console.error(error)
     }
-    const conn = Connect(urlConn)
-    console.log(`connecting to websocket server with url: ${urlConn} ...`)
-    // Datos iniciales del contexto
-    ctxData = {
-      user: null,
-      conn
+  }, [])
+
+  useEffect(() => {
+    if (connInfo[0].state !== WebSocket.CONNECTING || connInfo[0].conn === null) {
+      return
     }
-    // Obtener cookie recien establecida
-    const token = GetCookie("token")
-    handleConn(conn, ctxData, token)
-  } catch (error) {
-    console.error(error)
-  }
+    try {
+      const token = GetCookie("token")
+      handleConn(ctxData, token)
+    } catch (error) {
+      console.error(error)
+    }
+  }, [connInfo[0]])
 
   return <MainCTX.Provider value={ctxData}>{children}</MainCTX.Provider>
 }

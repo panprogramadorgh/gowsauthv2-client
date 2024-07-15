@@ -17,9 +17,9 @@ export function SetCookie(cookieName: string, cookieValue: string, days?: number
   if (days) {
     const date = new Date()
     date.setDate(date.getTime() + days * 24 * 60 * 60 * 1000)
-    expires = `; expires=${date}`
+    expires = ` ; expires=${date}`
   }
-  document.cookie = `${cookieName}=${cookieValue} ${expires}; path=/`
+  document.cookie = `${cookieName}=${cookieValue}${expires}; path=/`
 }
 
 export function RemoveCookie(cookieName: string): void {

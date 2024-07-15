@@ -2,10 +2,10 @@
 
 import { ChangeEvent, MouseEventHandler, useContext, useState } from "react"
 import Link from "next/link"
-import { LoginMsgReqBody, User, UserCredentials, WSMessage } from "@/utils/definitions";
+import { LoginMsgReqBody, UserCredentials, WSMessage } from "@/utils/definitions";
 import { MainCTX } from "../ctx/main-ctx";
-import WSMessageTypes from "@/utils/ws-message-types";
-import { serialize } from "@/utils/decodig-ws-message";
+import { checkConn } from "@/utils/connection";
+import { MessageTypes, serialize } from "@/utils/ws-messages";
 
 export default function LoginPage() {
   const ctx = useContext(MainCTX)
@@ -15,42 +15,56 @@ export default function LoginPage() {
     newCredentials[field] = event.target.value
     setCredentials(newCredentials)
   }
-  const handleClick: MouseEventHandler<HTMLButtonElement> = () => {
-    if (ctx && ctx.conn && ctx.conn.readyState === WebSocket.OPEN) {
-      const message: WSMessage<LoginMsgReqBody> = {
-        type: WSMessageTypes.login,
-        body: {
-          username: credentials.username,
-          password: credentials.password,
-        }
+  const handleClick: MouseEventHandler<HTMLButtonElement> = (event) => {
+    event.preventDefault()
+    if (!ctx || !checkConn(ctx.connInfo[0])) return console.error("no se puede enviar mensaje")
+    const conn = ctx.connInfo[0].conn!
+    const message: WSMessage<LoginMsgReqBody> = {
+      type: MessageTypes.login,
+      body: {
+        username: credentials.username,
+        password: credentials.password,
       }
-      const serialized = serialize(message)
-      ctx.conn.send(serialized)
     }
+    const serialized = serialize(message)
+    conn.send(serialized)
+    return
   }
 
   return <>
     <main className="min-h-screen flex justify-center items-center">
-      <div className="w-[350px] flex flex-col bg-zinc-200 rounded-lg p-6">
-        <h2 className="text-zinc-800 text-3xl font-semibold text-center pb-4">Login</h2>
+      <form className="w-[350px] flex flex-col bg-zinc-900 rounded-lg p-6">
+        <h2 className="text-zinc-200 text-3xl font-semibold text-center pb-4">Login</h2>
 
-        <input className="mb-1 bg-zinc-800 text-zinc-200 transition-all focus:bg-zinc-700" type="text" placeholder="Username" value={credentials.username} onChange={(e) => handleInputChange(e, "username")} />
+        <div className="flex flex-col gap-2 mb-4">
+          <label className="font-normal">Username</label>
+          <input autoFocus className="bg-zinc-800 text-zinc-200 transition-all focus:bg-zinc-700" type="text" value={credentials.username} onChange={(e) => handleInputChange(e, "username")} />
+        </div>
 
-        <input className="mb-1 bg-zinc-800 text-zinc-200 focus:bg-zinc-700" type="password" placeholder="Password" value={credentials.password} onChange={(e) => handleInputChange(e, "password")} />
+        <div className="flex flex-col gap-2 mb-4">
+          <label className="font-normal">Password</label>
+          <input className="bg-zinc-800 text-zinc-200 focus:bg-zinc-700" type="password" value={credentials.password} onChange={(e) => handleInputChange(e, "password")} />
+        </div>
 
-        <button onClick={handleClick} className="font-semibold mt-2 mb-4 transition-all bg-zinc-800 text-zinc-200 hover:bg-zinc-700">Send</button>
+        <div className="flex flex-col mb-6">
+          <button onClick={handleClick} className="font-semibold transition-all bg-zinc-800 text-zinc-200 hover:bg-zinc-700 focus:bg-zinc-700">Send</button>
+        </div>
 
         <div className="text-center">
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col gap-4 font-normal">
             <li>
-              <Link href="/">Back to the chat</Link>
+              <p>
+                Back to the <Link href="/">chat</Link>.
+              </p>
             </li>
             <li>
-              <Link href="/">I don't have account.</Link>
+              <p>
+                New here ? <Link href="/">Create an account.</Link>
+              </p>
             </li>
           </ul>
         </div>
-      </div>
+      </form>
     </main>
   </>
 }
