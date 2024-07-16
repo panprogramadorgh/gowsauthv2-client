@@ -3,7 +3,7 @@
 import React, { FC, ReactNode, createContext, useEffect, useState } from 'react'
 import { checkConn, connect } from '@/utils/connection'
 import { MainCTXData, User, Message, WebSocketConnInfo } from '@/utils/definitions'
-import { GetCookie } from '@/utils/cookie'
+import { getCookie } from '@/utils/cookie'
 import handleConn from '@/utils/handle-conn'
 import { EnvVarNotDefinedError } from '@/utils/env'
 import useGetRequiredUsers from '@/app/hooks/use-get-required-users'
@@ -17,11 +17,6 @@ export const MainCTX = createContext<MainCTXData | null>(null)
 interface Props { children: ReactNode }
 
 const MainCTXProvider: FC<Props> = ({ children }) => {
-
-  // Establecer cookie con token de sesion
-  // const userToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjF9.rOZUJsf4tJ9BrpRODd5ARwclRZpGTS16uRxhvgIwWdY"
-  // SetCookie("token", userToken, 365)
-
   const user = useState<User | null>(null);
   const connInfo = useState<WebSocketConnInfo>({ state: WebSocket.CLOSED, conn: null });
   const messages = useState<Message[]>([]);
@@ -54,7 +49,7 @@ const MainCTXProvider: FC<Props> = ({ children }) => {
       return
     }
     try {
-      const token = GetCookie("token")
+      const token = getCookie("token")
       handleConn(ctxData, token)
     } catch (error) {
       console.error(error)

@@ -1,20 +1,42 @@
 'use client'
 
-import { ChangeEvent, MouseEventHandler, useContext, useState } from "react"
+import { ChangeEvent, MouseEventHandler, useContext, useEffect, useState } from "react"
 import Link from "next/link"
 import { LoginMsgReqBody, UserCredentials, WSMessage } from "@/utils/definitions";
-import { MainCTX } from "../ctx/main-ctx";
+import { MainCTX } from "@/app/ctx/main-ctx";
 import { checkConn } from "@/utils/connection";
 import { MessageTypes, serialize } from "@/utils/ws-messages";
+import { useRouter } from "next/navigation";
+import { removeCookie } from "@/utils/cookie";
+import { FiEye } from "react-icons/fi";
+import { FiEyeOff } from "react-icons/fi";
 
 export default function LoginPage() {
   const ctx = useContext(MainCTX)
-  const [credentials, setCredentials] = useState<UserCredentials>({ username: "", password: "" });
+  const router = useRouter()
+
+  const initialCredentials = { username: "", password: "" }
+  const [credentials, setCredentials] = useState<UserCredentials>(initialCredentials);
+
+  const [passVisible, setPassVisible] = useState<boolean>(false)
+  const handleEyeClick: MouseEventHandler = (e) => {
+    e.preventDefault()
+    setPassVisible(prev => !prev)
+  }
+
+  useEffect(() => {
+    removeCookie("token") // Eliminar la sesion
+    if (!ctx || !ctx.user[0]) return
+    const [_, setUser] = ctx.user;
+    setUser(null)
+  }, [])
+
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>, field: "username" | "password") => {
     const newCredentials = { ...credentials }
     newCredentials[field] = event.target.value
     setCredentials(newCredentials)
   }
+
   const handleClick: MouseEventHandler<HTMLButtonElement> = (event) => {
     event.preventDefault()
     if (!ctx || !checkConn(ctx.connInfo[0])) return console.error("no se puede enviar mensaje")
@@ -28,7 +50,7 @@ export default function LoginPage() {
     }
     const serialized = serialize(message)
     conn.send(serialized)
-    return
+    router.push("/")
   }
 
   return <>
@@ -43,7 +65,12 @@ export default function LoginPage() {
 
         <div className="flex flex-col gap-2 mb-4">
           <label className="font-normal">Password</label>
-          <input className="bg-zinc-800 text-zinc-200 focus:bg-zinc-700" type="password" value={credentials.password} onChange={(e) => handleInputChange(e, "password")} />
+          <div className="flex flex-col relative">
+            <button onClick={handleEyeClick} className="flex items-center justify-center p-0 absolute w-6 h-6 right-2 top-[22.5%]">
+              {passVisible ? <FiEye className="w-full h-full" /> : <FiEyeOff className="w-full h-full" />}
+            </button>
+            <input className="bg-zinc-800 text-zinc-200 focus:bg-zinc-700" type={`${passVisible ? "text" : "password"}`} value={credentials.password} onChange={(e) => handleInputChange(e, "password")} />
+          </div>
         </div>
 
         <div className="flex flex-col mb-6">
@@ -54,12 +81,12 @@ export default function LoginPage() {
           <ul className="flex flex-col gap-4 font-normal">
             <li>
               <p>
-                Back to the <Link href="/">chat</Link>.
+                New here ? <Link href="/register">Create an account.</Link>
               </p>
             </li>
             <li>
               <p>
-                New here ? <Link href="/">Create an account.</Link>
+                Back to the <Link href="/">chat</Link>.
               </p>
             </li>
           </ul>

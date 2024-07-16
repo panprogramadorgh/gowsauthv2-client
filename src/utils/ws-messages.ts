@@ -1,4 +1,4 @@
-import { MessagesMsgReqBody, WhoamiMsgReqBody, WhoisMsgReqBody, WSMessage } from "./definitions";
+import { MessagesMsgReqBody, ShoutMsgReqBody, WhoamiMsgReqBody, WhoisMsgReqBody, WSMessage } from "./definitions";
 import { EnvVarNotDefinedError } from "./env";
 
 const adminToken = process.env["ADMIN_TOKEN"]!
@@ -51,6 +51,18 @@ export function sendWhois(conn: WebSocket, userID: number) {
     body: {
       token: adminToken,
       userID: userID
+    }
+  }
+  const serialized = serialize(message)
+  conn.send(serialized)
+}
+
+export function sendShout(conn: WebSocket, token: string, messageContent: string) {
+  const message: WSMessage<ShoutMsgReqBody> = {
+    type: MessageTypes.shout,
+    body: {
+      message: messageContent,
+      token,
     }
   }
   const serialized = serialize(message)

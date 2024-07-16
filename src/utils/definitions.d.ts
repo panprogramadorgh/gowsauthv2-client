@@ -9,13 +9,14 @@ export interface UserCredentials {
   password: string
 }
 
-export interface User extends UserCredentials {
-  userID: number;
+export interface UserPayload extends UserCredentials {
   firstname: string;
-  lastname: string;
+  lastname: string
 }
 
-// TODO: Implementar constructor de mensajes
+export interface User extends UserPayload {
+  userID: number;
+}
 
 export interface Message {
   messageID: number;
@@ -55,6 +56,14 @@ export interface LoginMsgReqBody extends UserCredentials { }
 
 export interface LoginMsgResBody {
   token: string
+}
+
+// Cuerpo de mensaje register (solicitud)
+export interface RegisterMsgReqBody extends UserPayload { }
+
+// Cuerpo de mensaje register (respuesta)
+export interface RegisterMsgResBody {
+  user: User
 }
 
 // Cuerpo de mensaje whoami (solicitud)

@@ -1,6 +1,6 @@
-import { WhoamiMsgResBody, ShoutMsgResBody, MainCTXData, WSMessage, MessageMsgResBody, LoginMsgResBody, ErrorMsgBody, WhoisMsgResBody } from "./definitions";
+import { WhoamiMsgResBody, ShoutMsgResBody, MainCTXData, WSMessage, MessageMsgResBody, LoginMsgResBody, ErrorMsgBody, WhoisMsgResBody, RegisterMsgResBody } from "./definitions";
 import { sendMessages, sendWhoami, MessageTypes, checkWSMsg } from "./ws-messages";
-import { SetCookie } from "./cookie";
+import { setCookie } from "./cookie";
 import { checkConn, WSConnErr } from "./connection";
 
 // Funcion para menajar la conexion websocket. La funcion tiene como objetivo recibir mensajes de respuesta de la conexion websocket y con ello modificar los datos del contexto. Ademas tiene recibe el token guardado en la cookie de la aplicacion (en caso de haber una sesion guardada). Nada mas establecer la conexion websocket con el servidor se manda un mensaje whoami al servidor y este verifica el token y responde coxxn los claims del token (en este caso los claims del token consiste en un objeto con el user_id del usuario en la base de datos)
@@ -42,6 +42,7 @@ function handleMessage(message: string, ctx: MainCTXData) {
   const resM = JSON.parse(message) as WSMessage<any>
 
   if (checkWSMsg<ShoutMsgResBody>(MessageTypes.shout, resM)) {
+    console.log("respuesta shout")
     const [_, setMessages] = ctx.messages
     setMessages(prev => {
       const newMessages = [...prev, resM.body]
@@ -53,8 +54,12 @@ function handleMessage(message: string, ctx: MainCTXData) {
     setMessages(resM.body.messages)
   }
   else if (checkWSMsg<LoginMsgResBody>(MessageTypes.login, resM)) {
-    console.log(resM.body)
-    SetCookie('token', resM.body.token)
+    setCookie('token', resM.body.token, 1)
+    const connInfo = ctx?.connInfo[0]
+    sendWhoami(connInfo.conn!, resM.body.token)
+  }
+  else if (checkWSMsg<RegisterMsgResBody>(MessageTypes.register, resM)) {
+    // -------------------
   }
   else if (checkWSMsg<WhoamiMsgResBody>(MessageTypes.whoami, resM)) {
     const [_, setUser] = ctx.user

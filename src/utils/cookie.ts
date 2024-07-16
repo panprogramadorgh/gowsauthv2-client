@@ -1,4 +1,4 @@
-export function GetCookie(cookieName: string): string | null {
+export function getCookie(cookieName: string): string | null {
   const name = `${cookieName}=`
   const decodedCookies = decodeURIComponent(document.cookie)
   const cookies = decodedCookies.split(";")
@@ -12,17 +12,16 @@ export function GetCookie(cookieName: string): string | null {
   return cookieValue
 }
 
-export function SetCookie(cookieName: string, cookieValue: string, days?: number): void {
+export function setCookie(cookieName: string, cookieValue: string, days?: number): void {
   let expires: string = ""
-  if (days) {
+  if (days !== undefined) {
     const date = new Date()
-    date.setDate(date.getTime() + days * 24 * 60 * 60 * 1000)
-    expires = ` ; expires=${date}`
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000)
+    expires = `; expires=${date.toUTCString()}`
   }
   document.cookie = `${cookieName}=${cookieValue}${expires}; path=/`
 }
 
-export function RemoveCookie(cookieName: string): void {
-  const pastDate = 100 * 365 * -1
-  SetCookie(cookieName, "", pastDate)
+export function removeCookie(cookieName: string): void {
+  setCookie(cookieName, "", -1)
 }

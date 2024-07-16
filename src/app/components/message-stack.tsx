@@ -18,13 +18,11 @@ const MessageStack: FC<Props> = () => {
   if (!checkConn(connInfo)) return null
 
   return <>
-    <div className="flex flex-col w-[50%] gap-2">
-      {messages.map(message => {
-        const owner = requiredUsers.find(user => user.userID == message.owner)
-        if (!owner) return null
-        return <Message key={message.messageID} session={user} owner={owner}>{message.message}</Message>
-      })}
-    </div>
+    {messages.map(message => {
+      const owner = requiredUsers.find(user => user.userID == message.owner)
+      if (!owner) return null
+      return <Message key={message.messageID} session={user} owner={owner}>{message.message}</Message>
+    })}
   </>
 }
 
