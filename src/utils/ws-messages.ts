@@ -1,4 +1,4 @@
-import { MessagesMsgReqBody, ShoutMsgReqBody, WhoamiMsgReqBody, WhoisMsgReqBody, WSMessage } from "./definitions";
+import { LoginMsgReqBody, MessagesMsgReqBody, RegisterMsgReqBody, ShoutMsgReqBody, UserPayload, WhoamiMsgReqBody, WhoisMsgReqBody, WSMessage } from "./definitions";
 import { EnvVarNotDefinedError } from "./env";
 
 const adminToken = process.env["ADMIN_TOKEN"]!
@@ -63,6 +63,32 @@ export function sendShout(conn: WebSocket, token: string, messageContent: string
     body: {
       message: messageContent,
       token,
+    }
+  }
+  const serialized = serialize(message)
+  conn.send(serialized)
+}
+
+export function sendLogin(conn: WebSocket, username: string, password: string) {
+  const message: WSMessage<LoginMsgReqBody> = {
+    type: MessageTypes.login,
+    body: {
+      username,
+      password,
+    }
+  }
+  const serialized = serialize(message)
+  conn.send(serialized)
+}
+
+export function sendRegister(conn: WebSocket, p: UserPayload) {
+  const message: WSMessage<RegisterMsgReqBody> = {
+    type: MessageTypes.register,
+    body: {
+      username: p.username,
+      password: p.password,
+      firstname: p.firstname,
+      lastname: p.lastname
     }
   }
   const serialized = serialize(message)

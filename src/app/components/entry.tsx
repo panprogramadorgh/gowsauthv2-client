@@ -28,9 +28,9 @@ const Entry: FC<Props> = () => {
     setIntput("")
   }
 
-  return <div className="w-[65%] h-[85px] flex sticky bottom-0 bg-neutral-800 text-zinc-300 pb-4">
+  return <div className="w-[65%] h-[85px] flex sticky bottom-0 bg-neutral-800 pb-4">
     <textarea spellCheck className="flex-grow h-full bg-zinc-900 rounded-lg p-4 outline-none resize-none field-sizig-content" placeholder="Start typing a message ..." onChange={handleChange} value={input} />
-    <button onClick={handleClick} className="flex-grow-0 min-w-[65px] h-full flex justify-center items-center bg-zinc-900 rounded-lg ml-2"><BsFillSendFill className="text-xl" /></button>
+    <button onClick={handleClick} className="flex-grow-0 w-[65px] h-[65px] flex justify-center items-center bg-zinc-900 rounded-lg ml-2 p-4"><BsFillSendFill className="w-full h-full" /></button>
   </div>
 }
 
